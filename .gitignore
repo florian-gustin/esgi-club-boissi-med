@@ -1,0 +1,7 @@
+boissi-contract/open-api/target
+boissi-billing/open-api/target
+
+boissi-billing/app/target
+boissi-contract/app/target
+
+.idea/

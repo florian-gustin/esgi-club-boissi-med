@@ -1,0 +1,192 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Travel Contract
+  description: The Travel Contract Application System
+servers:
+  - url: https://api.esgi.fr/refcontract/v1
+paths:
+  /contracts:
+    get:
+      operationId: searchContract
+      summary: Search Contract
+      description: >-
+        Multi-criteria search for contracts. The result is a list (maybe
+        empty) of contracts
+      security:
+        - OAuth2:
+            - read
+        - ApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/QueryContractBySubscriptionId'
+      responses:
+        '200':
+          description: SUCCESS - Returns a Contract
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractResponse'
+
+        '401':
+          description: ERROR - Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: ERROR - Access token does not have the required scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '500':
+          description: ERROR - Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      operationId: postContract
+      summary: Add a Contract
+      description: Add a new Contract
+      security:
+        - OAuth2:
+            - write
+        - ApiKey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractRequest'
+
+      responses:
+        '201':
+          description: SUCCESS - Contract created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractResponse'
+
+        '400':
+          description: ERROR - Invalid object request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '401':
+          description: ERROR - Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: ERROR - Access token does not have the required scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '500':
+          description: ERROR - Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+
+
+#    patch:
+#      operationId: patchContract
+#      summary: Add a Contract
+#      description: Add a new Contract
+#      security:
+#        - OAuth2:
+#            - write
+#        - ApiKey: [ ]
+
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: X-OKAPI-KEY
+      in: header
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://moncompte.esgi.fr/oauth/authorize
+          tokenUrl: https://moncompte/esgi.fr/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+
+  parameters:
+    QueryContractBySubscriptionId:
+      name: subscriptionId
+      in: query
+      example: 444e4567-e89b-12d3-a456-556642440000
+      schema:
+        type: string
+
+  schemas:
+    ErrorType:
+      type: object
+      required:
+        - path
+        - timestamp
+        - errorCode
+        - status
+      properties:
+        path:
+          type: string
+        timestamp:
+          type: integer
+        errorCode:
+          type: string
+        status:
+          type: integer
+        message:
+          type: string
+        detail:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorType'
+
+    ContractRequest:
+      description: Describes contract
+      type: object
+      required:
+        - subscriptionId
+        - status
+        - contractType
+      properties:
+        subscriptionId:
+          type: string
+        status:
+          type: string
+        contractType:
+          type: string
+
+    ContractResponse:
+      required:
+        - contractId
+        - contractRef
+      properties:
+        contractId:
+          type: string
+        status:
+          type: string
+        contractType:
+          type: string

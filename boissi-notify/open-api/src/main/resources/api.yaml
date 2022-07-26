@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Travel Notify
+  description: The Travel Invoicing Application System
+servers:
+  - url: https://api.esgi.fr/notify/v1
+paths: {}
+components:
+  securitySchemes: {}
+  parameters: {}
+  schemas: {}

@@ -1,0 +1,318 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Travel Billing
+  description: The Travel Invoicing Application System
+servers:
+  - url: https://api.esgi.fr/billing/v1
+paths:
+  /subscriptions:
+    post:
+      operationId: postSubscription
+      summary: Add Subscriptions
+      description: Add a new Subscription
+      security:
+        - OAuth2:
+            - write
+        - ApiKey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+            examples:
+              SubscriptionResponse:
+                $ref: '#/components/examples/SubscriptionRequest'
+      responses:
+        '201':
+          description: SUCCESS - Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+              examples:
+                SubscriptionResponse:
+                  $ref: '#/components/examples/SubscriptionResponse'
+        '400':
+          description: ERROR - Invalid object request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+        '401':
+          description: ERROR - Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+        '403':
+          description: ERROR - Access token does not have the required scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+        '500':
+          description: ERROR - Internal Server error
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/ErrorResponse'
+#              examples:
+#                SubscriptionsResponse:
+#                $ref: '#/components/examples/ErrorResponse'
+  /operations:
+    post:
+      summary: Add Operations
+      description: Add a new Operation to deferred billing
+      security:
+        - OAuth2:
+            - write
+        - ApiKey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperationRequest'
+            examples:
+              OperationRequest:
+                $ref: '#/components/examples/OperationRequest'
+      responses:
+        '201':
+          description: Operation successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+              examples:
+                OperationResponse:
+                  $ref: '#/components/examples/OperationResponse'
+        '401':
+          description: ERROR - Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+        '403':
+          description: ERROR - Access token does not have the required scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+        '500':
+          description: ERROR - Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                SubscriptionsResponse:
+                  $ref: '#/components/examples/ErrorResponse'
+  /invoices:
+    get:
+      summary: Generate Invoices
+      operationId: generateInvoices
+      description: Generate and return a list of Invoices
+      security:
+        - OAuth2:
+            - read
+        - ApiKey: []
+      parameters:
+        - $ref: '#/components/parameters/QueryInvoicesByUser'
+      responses:
+        '200':
+          description: Successfully returned a list of Invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+
+        '401':
+          description: ERROR - Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+#              examples:
+#                SubscriptionsResponse:
+#                  $ref: '#/components/examples/ErrorResponse'
+        '403':
+          description: ERROR - Access token does not have the required scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+#              examples:
+#                SubscriptionsResponse:
+#                  $ref: '#/components/examples/ErrorResponse'
+        '500':
+          description: ERROR - Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+#              examples:
+#                SubscriptionsResponse:
+#                  $ref: '#/components/examples/ErrorResponse'
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: X-OKAPI-KEY
+      in: header
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://moncompte.esgi.fr/oauth/authorize
+          tokenUrl: https://moncompte/esgi.fr/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+  parameters:
+    QueryInvoicesByUser:
+      name: user
+      in: query
+      example: 444e4567-e89b-12d3-a456-556642440000
+      schema:
+        type: string
+
+  schemas:
+    ErrorType:
+      type: object
+      required:
+        - path
+        - timestamp
+        - errorCode
+        - status
+      properties:
+        path:
+          type: string
+        timestamp:
+          type: integer
+        errorCode:
+          type: string
+        status:
+          type: integer
+        message:
+          type: string
+        detail:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorType'
+
+    SubscriptionRequest:
+      type: object
+      properties:
+        buyer:
+          type: string
+        seller:
+          type: string
+        payment:
+          type: string
+        contractType:
+          type: string
+
+    SubscriptionResponse:
+      type: object
+      properties:
+        buyer:
+          type: string
+        seller:
+          type: string
+        payment:
+          type: string
+        subscriptionId:
+          type: string
+        createdAt:
+          type: string
+
+    OperationRequest:
+      type: object
+      properties:
+        buyer:
+          type: string
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderRequest'
+        subscriptionId:
+          type: string
+
+    OrderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+
+    OrderResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+
+    OperationResponse:
+      type: object
+      properties:
+        buyer:
+          type: string
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderResponse'
+        operationAt:
+          type: string
+        subscriptionId:
+          type: string
+
+    InvoiceResponse:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/SubscriptionResponse'
+        contract:
+          $ref: '#/components/schemas/ContractResponse'
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationResponse'
+        total:
+          type: number
+
+    ContractResponse:
+      required:
+        - contractId
+        - contractRef
+      properties:
+        contractId:
+          type: string
+        status:
+          type: string
+        contractType:
+          type: string
